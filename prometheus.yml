@@ -1,0 +1,15 @@
+#global:
+#  scrape_interval: 15s  # Frequency of metric scraping
+
+#scrape_configs:
+#  - job_name: 'prometheus'
+#    static_configs:
+#      - targets: ['localhost:9090']
+global:
+  scrape_interval: 15s
+
+scrape_configs:
+  - job_name: "cy-weather-api"
+    metrics_path: /metrics
+    static_configs:
+      - targets: ["api:8000"]

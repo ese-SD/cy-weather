@@ -1,7 +1,7 @@
 from fastapi import FastAPI, APIRouter
 from fastapi.middleware.cors import CORSMiddleware
 from src.resources.weather_resource import router as weather_router
-
+from prometheus_fastapi_instrumentator import Instrumentator, metrics
 
 tags_metadata = [
     {
@@ -38,6 +38,21 @@ router = APIRouter(
     prefix="/api",
 )
 
+instrumentator = Instrumentator(
+    should_group_status_codes=False,
+    should_ignore_untemplated=True,
+    should_respect_env_var=True,
+    should_instrument_requests_inprogress=True,
+    excluded_handlers=[".*admin.*", "/metrics"],
+    env_var_name="ENABLE_METRICS",
+    inprogress_name="inprogress",
+    inprogress_labels=True
+)
+
+instrumentator.instrument(app)
+@app.on_event("startup")
+async def _startup():
+    instrumentator.expose(app)
 
 @router.get("/health", tags=["Health"])
 async def health_check():

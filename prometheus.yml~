@@ -1,4 +1,5 @@
 services:
+  # Service API Backend (FastAPI)
   api:
     build:
       context: ./api
@@ -8,7 +9,6 @@ services:
       - "8000:8000"
     environment:
       - PYTHONUNBUFFERED=1
-      - ENABLE_METRICS=true
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8000/api/health"]
@@ -19,11 +19,13 @@ services:
     networks:
       - cy-weather-network
 
+  # Service Frontend Web (Vue.js + Nginx)
   web:
     build:
       context: ./web
       dockerfile: Dockerfile
       args:
+        # URL de l'API pour le build
         VITE_API_URL: http://localhost:8000/api
     container_name: cy-weather-web
     ports:
@@ -37,37 +39,40 @@ services:
       start_period: 10s
     networks:
       - cy-weather-network
-
+  
   prometheus:
-    image: prom/prometheus:v2.52.0
+    image: prom/prometheus
     container_name: prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
     ports:
-      - "9090:9090"
-    volumes:
-      - ./prometheus.yml:/etc/prometheus/prometheus.yml:ro
-    networks:
-      - cy-weather-network
+      - 9090:9090
     restart: unless-stopped
-
+    volumes:
+      - ./prometheus:/etc/prometheus
+      - prom_data:/prometheus
+    networks:
+      - monitoring
   grafana:
-    image: grafana/grafana-enterprise
+    image: grafana/grafana
     container_name: grafana
+    ports:
+      - 3000:3000
     restart: unless-stopped
     environment:
       - GF_SECURITY_ADMIN_USER=admin
       - GF_SECURITY_ADMIN_PASSWORD=grafana
-    ports:
-      - "3000:3000"
     volumes:
-      - grafana_storage:/var/lib/grafana
+      - ./grafana:/etc/grafana/provisioning/datasources
     networks:
-      - cy-weather-network
+      - monitoring
+
+volumes:
+  grafana_storage: {}
+  prom_data: {}
 
 networks:
   cy-weather-network:
     driver: bridge
   monitoring:
-    external: true
-
-volumes:
-  grafana_storage: {}
+    driver: bridge
