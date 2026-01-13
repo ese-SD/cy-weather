@@ -9,6 +9,8 @@ from src.models.Weather import (
 )
 
 
+gsngdflsgd
+
 class WeatherService:
     """Service pour récupérer les données météo depuis Open-Meteo (API gratuite)"""
 
