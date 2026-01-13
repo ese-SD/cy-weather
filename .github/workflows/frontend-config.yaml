@@ -1,0 +1,20 @@
+name: Deploy FrontEnd to GitHub Pages
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build_and_deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          submodules: true
+
+      - name: Build and deploy Zola site
+        uses: knzai/zola-build@v1
+        with:
+          deploy: true
