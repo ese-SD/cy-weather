@@ -9,6 +9,14 @@ jobs:
   build_and_deploy:
     runs-on: ubuntu-latest
     steps:
+      - name: Install dependencies
+        working-directory: web
+        run: npm ci
+      
+      - name: Build frontend
+        working-directory: web
+        run: npm run build
+
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
